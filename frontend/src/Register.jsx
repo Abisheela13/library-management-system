@@ -10,6 +10,7 @@ function Register() {
     name: "",
     email: "",
     password: "",
+     role: "USER",
   });
 
   const handleChange = (e) => {
@@ -26,7 +27,7 @@ function Register() {
     try {
 
      await API.post("/api/auth/register", formData);
-     
+
       alert("Registration Successful");
 
       navigate("/");
@@ -111,6 +112,16 @@ function Register() {
             />
 
           </div>
+
+            <select
+  name="role"
+  className="form-control p-3"
+  onChange={handleChange}
+>
+  <option value="USER">User</option>
+  <option value="ADMIN">Admin</option>
+</select>
+
 
           <button
             className="btn btn-dark w-100 p-3"

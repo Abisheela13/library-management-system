@@ -7,7 +7,7 @@ const jwt = require("jsonwebtoken");
 const registerUser = async (req, res) => {
   try {
 
-    const { name, email, password } = req.body;
+    const { name, email, password,role } = req.body;
 
     // check user exists
     const existingUser = await prisma.user.findUnique({
@@ -29,6 +29,7 @@ const registerUser = async (req, res) => {
         name,
         email,
         password: hashedPassword,
+        role,
       },
     });
 
