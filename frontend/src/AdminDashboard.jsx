@@ -98,7 +98,7 @@ function AdminDashboard() {
       if (editBookId) {
 
         await API.put(
-          `/books/${editBookId}`,
+          `/api/books/${editBookId}`,
           formData,
           {
             headers: {
@@ -117,7 +117,7 @@ function AdminDashboard() {
       else {
 
         await API.post(
-          "/books",
+          "/api/books",
           formData,
           {
             headers: {
@@ -156,7 +156,7 @@ function AdminDashboard() {
     try {
 
       await API.delete(
-        `/books/${id}`,
+        `/api/books/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
