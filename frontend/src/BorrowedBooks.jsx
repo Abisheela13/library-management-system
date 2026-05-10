@@ -19,7 +19,7 @@ function BorrowedBooks() {
     try {
 
       const response = await API.get(
-        "api/borrow",
+        "/api/borrow",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -63,7 +63,7 @@ function BorrowedBooks() {
     try {
 
       await API.post(
-        "/borrow/return",
+        "/api/borrow/return",
         {
           borrowId,
         },

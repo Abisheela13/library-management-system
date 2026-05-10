@@ -41,7 +41,8 @@ const borrowBook = async (req, res) => {
 
 const returnBook = async (req, res) => {
   try {
-    const { borrowId } = req.body;
+
+    const borrowId = Number(req.body.borrowId);
 
     const borrow = await prisma.borrow.update({
       where: {
@@ -64,10 +65,15 @@ const returnBook = async (req, res) => {
     res.status(200).json({
       message: "Book returned successfully",
     });
+
   } catch (error) {
+
+    console.log(error);
+
     res.status(500).json({
       error: error.message,
     });
+
   }
 };
 
