@@ -57,7 +57,7 @@ function Dashboard() {
     try {
 
       await API.post(
-        "/borrow/borrow",
+        "api/borrow/borrow",
         {
           bookId,
         },
