@@ -1,0 +1,46 @@
+body {
+  background: #f4f7fb;
+  font-family: Arial, sans-serif;
+}
+
+a {
+  text-decoration: none;
+}
+
+.card-hover {
+  transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-6px);
+}
+
+.form-control {
+  border-radius: 12px !important;
+  box-shadow: none !important;
+  border: 1px solid #ddd;
+}
+
+.form-control:focus {
+  border-color: black;
+  box-shadow: none !important;
+}
+
+.btn {
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  transition: 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+.dashboard-title {
+  font-size: 2.2rem;
+}
+
+.dashboard-subtitle {
+  color: gray;
+  margin-top: -5px;
+}
