@@ -56,22 +56,35 @@ const updateBook = async (req, res) => {
 };
 
 const deleteBook = async (req, res) => {
+
   try {
-    const { id } = req.params;
+
+    const id = Number(req.params.id);
+
+    await prisma.borrow.deleteMany({
+      where: {
+        bookId: id,
+      },
+    });
 
     await prisma.book.delete({
       where: {
-        id: Number(id),
+        id,
       },
     });
 
     res.status(200).json({
       message: "Book deleted successfully",
     });
+
   } catch (error) {
+
+    console.log(error);
+
     res.status(500).json({
       error: error.message,
     });
+
   }
 };
 
