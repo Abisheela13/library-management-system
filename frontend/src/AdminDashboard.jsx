@@ -26,7 +26,7 @@ function AdminDashboard() {
     try {
 
       const response = await API.get(
-        "/books",
+        "/api/books",
         {
           headers: {
             Authorization: `Bearer ${token}`,
