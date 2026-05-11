@@ -11,6 +11,8 @@ function AdminDashboard() {
     localStorage.getItem("user")
   );
 
+  const token = localStorage.getItem("token");
+
   const [books, setBooks] = useState([]);
 
   const [formData, setFormData] = useState({
@@ -21,41 +23,38 @@ function AdminDashboard() {
 
   const [editBookId, setEditBookId] = useState(null);
 
-  /* FETCH BOOKS */
-  const fetchBooks = async () => {
-
-    try {
-
-      const token = localStorage.getItem("token");
-
-      const response = await API.get(
-        "/api/books",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      setBooks(response.data);
-
-    } catch (error) {
-
-      console.log(error);
-
-      alert("Failed to fetch books");
-
-    }
-  };
-
-  /* LOAD BOOKS */
+  /* GET BOOKS */
   useEffect(() => {
 
-    fetchBooks();
+    const getBooks = async () => {
 
-  }, []);
+      try {
 
-  /* HANDLE CHANGE */
+        const res = await API.get(
+          "/api/books",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setBooks(res.data);
+
+      } catch (err) {
+
+        console.log(err);
+
+        alert("Failed to load books");
+
+      }
+    };
+
+    getBooks();
+
+  }, [token]);
+
+  /* HANDLE INPUT */
   const handleChange = (e) => {
 
     setFormData({
@@ -65,7 +64,7 @@ function AdminDashboard() {
 
   };
 
-  /* HANDLE EDIT */
+  /* EDIT */
   const handleEdit = (book) => {
 
     setEditBookId(book.id);
@@ -83,16 +82,12 @@ function AdminDashboard() {
 
   };
 
-  /* ADD / UPDATE */
+  /* ADD / UPDATE BOOK */
   const handleSubmit = async (e) => {
 
     e.preventDefault();
 
     try {
-
-      const token = localStorage.getItem("token");
-
-      console.log("TOKEN =", token);
 
       const payload = {
         title: formData.title,
@@ -113,9 +108,7 @@ function AdminDashboard() {
           }
         );
 
-        alert("Book Updated Successfully");
-
-        setEditBookId(null);
+        alert("Book Updated");
 
       }
 
@@ -132,26 +125,37 @@ function AdminDashboard() {
           }
         );
 
-        alert("Book Added Successfully");
+        alert("Book Added");
 
       }
 
-      /* CLEAR FORM */
+      /* RELOAD BOOKS */
+      const res = await API.get(
+        "/api/books",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setBooks(res.data);
+
+      /* RESET */
       setFormData({
         title: "",
         author: "",
         quantity: "",
       });
 
-      /* REFRESH BOOKS */
-      fetchBooks();
+      setEditBookId(null);
 
-    } catch (error) {
+    } catch (err) {
 
-      console.log(error);
+      console.log(err);
 
       alert(
-        error.response?.data?.message ||
+        err.response?.data?.message ||
         "Operation Failed"
       );
 
@@ -163,8 +167,6 @@ function AdminDashboard() {
 
     try {
 
-      const token = localStorage.getItem("token");
-
       await API.delete(
         `/api/books/${id}`,
         {
@@ -174,15 +176,24 @@ function AdminDashboard() {
         }
       );
 
-      alert("Book Deleted Successfully");
+      alert("Book Deleted");
 
-      fetchBooks();
+      const res = await API.get(
+        "/api/books",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-    } catch (error) {
+      setBooks(res.data);
 
-      console.log(error);
+    } catch (err) {
 
-      alert("Failed to delete book");
+      console.log(err);
+
+      alert("Delete Failed");
 
     }
   };
@@ -202,48 +213,21 @@ function AdminDashboard() {
       <Navbar />
 
       <div
-        className="container-fluid px-4 px-md-5 py-5"
-        style={{
-          minHeight: "100vh",
-          background: "#f5f7fb"
-        }}
+        className="container py-5"
       >
 
-        <div
-          className="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-5 gap-3"
-        >
+        <div className="d-flex justify-content-between align-items-center mb-4">
 
           <div>
-
-            <h1
-              className="fw-bold mb-2"
-              style={{
-                fontSize: "3rem",
-                color: "#111827"
-              }}
-            >
-              Admin Dashboard
-            </h1>
-
-            <p
-              className="mb-0"
-              style={{
-                color: "#6b7280",
-                fontSize: "1.1rem"
-              }}
-            >
-              Welcome, {user?.name}
+            <h1>Admin Dashboard</h1>
+            <p>
+              Welcome {user?.name}
             </p>
-
           </div>
 
           <button
-            className="btn btn-dark px-4 py-3"
+            className="btn btn-dark"
             onClick={handleLogout}
-            style={{
-              borderRadius: "14px",
-              fontWeight: "600"
-            }}
           >
             Logout
           </button>
@@ -251,20 +235,15 @@ function AdminDashboard() {
         </div>
 
         {/* FORM */}
-        <div
-          className="card border-0 shadow-sm p-4 mb-5"
-          style={{
-            borderRadius: "24px",
-            background: "#ffffff"
-          }}
-        >
 
-          <h3 className="fw-bold mb-4">
+        <div className="card p-4 mb-5">
+
+          <h3 className="mb-4">
 
             {
               editBookId
                 ? "Edit Book"
-                : "Add New Book"
+                : "Add Book"
             }
 
           </h3>
@@ -273,71 +252,58 @@ function AdminDashboard() {
 
             <div className="row">
 
-              <div className="col-lg-4 mb-3">
+              <div className="col-md-4 mb-3">
 
                 <input
                   type="text"
                   name="title"
                   placeholder="Book Title"
-                  className="form-control py-3 px-4"
+                  className="form-control"
                   value={formData.title}
                   onChange={handleChange}
                   required
-                  style={{
-                    borderRadius: "14px"
-                  }}
                 />
 
               </div>
 
-              <div className="col-lg-4 mb-3">
+              <div className="col-md-4 mb-3">
 
                 <input
                   type="text"
                   name="author"
-                  placeholder="Author Name"
-                  className="form-control py-3 px-4"
+                  placeholder="Author"
+                  className="form-control"
                   value={formData.author}
                   onChange={handleChange}
                   required
-                  style={{
-                    borderRadius: "14px"
-                  }}
                 />
 
               </div>
 
-              <div className="col-lg-2 mb-3">
+              <div className="col-md-2 mb-3">
 
                 <input
                   type="number"
                   name="quantity"
                   placeholder="Quantity"
-                  className="form-control py-3 px-4"
+                  className="form-control"
                   value={formData.quantity}
                   onChange={handleChange}
                   required
-                  style={{
-                    borderRadius: "14px"
-                  }}
                 />
 
               </div>
 
-              <div className="col-lg-2 mb-3">
+              <div className="col-md-2 mb-3">
 
                 <button
-                  className="btn btn-dark w-100 py-3"
-                  style={{
-                    borderRadius: "14px",
-                    fontWeight: "600"
-                  }}
+                  className="btn btn-dark w-100"
                 >
 
                   {
                     editBookId
                       ? "Update"
-                      : "Add Book"
+                      : "Add"
                   }
 
                 </button>
@@ -351,75 +317,43 @@ function AdminDashboard() {
         </div>
 
         {/* BOOKS */}
+
         <div className="row">
 
           {
-            books?.map((book) => (
+            books.map((book) => (
 
               <div
-                className="col-sm-6 col-xl-4 mb-4"
+                className="col-md-4 mb-4"
                 key={book.id}
               >
 
-                <div
-                  className="card border-0 shadow-sm h-100 p-4"
-                  style={{
-                    borderRadius: "24px",
-                    background: "#ffffff"
-                  }}
-                >
+                <div className="card p-4 h-100">
 
-                  <h3 className="fw-bold mb-2">
-                    {book.title}
-                  </h3>
+                  <h4>{book.title}</h4>
 
-                  <p
-                    className="mb-2"
-                    style={{
-                      color: "#6b7280"
-                    }}
-                  >
-                    {book.author}
+                  <p>{book.author}</p>
+
+                  <p>
+                    Quantity: {book.quantity}
                   </p>
 
                   <p>
-                    <strong>Total Quantity:</strong>{" "}
-                    {book.quantity}
+                    Available: {book.available}
                   </p>
 
-                  <p>
-                    <strong>Available:</strong>{" "}
-                    <span
-                      className={
-                        book.available > 0
-                          ? "text-success fw-bold"
-                          : "text-danger fw-bold"
-                      }
-                    >
-                      {book.available}
-                    </span>
-                  </p>
-
-                  <div className="d-flex gap-2 mt-auto">
+                  <div className="d-flex gap-2">
 
                     <button
-                      className="btn btn-warning w-50 py-3"
+                      className="btn btn-warning w-50"
                       onClick={() => handleEdit(book)}
-                      style={{
-                        borderRadius: "14px",
-                        fontWeight: "600"
-                      }}
                     >
                       Edit
                     </button>
 
                     <button
-                      className="btn btn-danger w-50 py-3"
+                      className="btn btn-danger w-50"
                       onClick={() => deleteBook(book.id)}
-                      style={{
-                        borderRadius: "14px",
-                        fontWeight: "600"
-                      }}
                     >
                       Delete
                     </button>
@@ -437,7 +371,6 @@ function AdminDashboard() {
 
       </div>
     </>
-
   );
 }
 
