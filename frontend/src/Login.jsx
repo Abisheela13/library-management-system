@@ -24,10 +24,8 @@ function Login() {
 
       setLoading(true);
 
-      const endpoint = isAdmin
-        ? "/api/admin/login"
-        : "/api/auth/login";
-
+      const endpoint = "/api/auth/login";
+      
       const res = await API.post(endpoint, form);
 
       localStorage.setItem(

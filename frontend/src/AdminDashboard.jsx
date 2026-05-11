@@ -51,34 +51,34 @@ const navigate = useNavigate();
   /* LOAD BOOKS */
    useEffect(() => {
 
-    const loadBooks = async () => {
+  const loadBooks = async () => {
 
-      try {
+    try {
 
-        const response = await API.get(
-          "/api/books",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+      const response = await API.get(
+        "/api/books",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-        setBooks(response.data);
+      setBooks(response.data);
 
-      } catch (error) {
+    } catch (error) {
 
-        console.log(error);
+      console.log(error);
 
-        alert("Failed to fetch books");
+      alert("Failed to fetch books");
 
-      }
+    }
 
-    };
+  };
 
-    loadBooks();
+  loadBooks();
 
-  }, []);
+}, []);
 
   /* HANDLE EDIT */
   const handleEdit = (book) => {
