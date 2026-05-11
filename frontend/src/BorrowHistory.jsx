@@ -7,20 +7,22 @@ function BorrowHistory() {
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await API.get("/api/borrow/history", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+  if (!token) return;
 
-        setHistory(res.data || []);
-      } catch (err) {
-        console.log("History Error:", err);
-      }
-    };
+  const load = async () => {
+    try {
+      const res = await API.get("/api/borrow/history", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    if (token) load();
-  }, [token]);
+      setHistory(res.data || []);
+    } catch (err) {
+      console.log("History Error:", err);
+    }
+  };
+
+  load();
+}, [token]);
 
   return (
     <>
@@ -60,7 +62,7 @@ function BorrowHistory() {
               </div>
             ))
           ) : (
-            <p>No history found</p>
+           <p className="text-muted mt-3">No borrow history found</p>
           )}
         </div>
       </div>
