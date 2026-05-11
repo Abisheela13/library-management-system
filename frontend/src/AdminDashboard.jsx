@@ -5,13 +5,11 @@ import { useNavigate } from "react-router-dom";
 
 function AdminDashboard() {
 
-const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const user = JSON.parse(
     localStorage.getItem("user")
   );
-
-  const token = localStorage.getItem("token");
 
   const [books, setBooks] = useState([]);
 
@@ -27,6 +25,8 @@ const navigate = useNavigate();
   const fetchBooks = async () => {
 
     try {
+
+      const token = localStorage.getItem("token");
 
       const response = await API.get(
         "/api/books",
@@ -49,36 +49,21 @@ const navigate = useNavigate();
   };
 
   /* LOAD BOOKS */
-   useEffect(() => {
+  useEffect(() => {
 
-  const loadBooks = async () => {
+    fetchBooks();
 
-    try {
+  }, []);
 
-      const response = await API.get(
-        "/api/books",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+  /* HANDLE CHANGE */
+  const handleChange = (e) => {
 
-      setBooks(response.data);
-
-    } catch (error) {
-
-      console.log(error);
-
-      alert("Failed to fetch books");
-
-    }
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
 
   };
-
-  loadBooks();
-
-}, []);
 
   /* HANDLE EDIT */
   const handleEdit = (book) => {
@@ -98,22 +83,16 @@ const navigate = useNavigate();
 
   };
 
-  /* HANDLE CHANGE */
-  const handleChange = (e) => {
-
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-
-  };
-
-  /* ADD / UPDATE BOOK */
+  /* ADD / UPDATE */
   const handleSubmit = async (e) => {
 
     e.preventDefault();
 
     try {
+
+      const token = localStorage.getItem("token");
+
+      console.log("TOKEN =", token);
 
       const payload = {
         title: formData.title,
@@ -164,7 +143,7 @@ const navigate = useNavigate();
         quantity: "",
       });
 
-      /* REFRESH */
+      /* REFRESH BOOKS */
       fetchBooks();
 
     } catch (error) {
@@ -177,13 +156,14 @@ const navigate = useNavigate();
       );
 
     }
-
   };
 
   /* DELETE */
   const deleteBook = async (id) => {
 
     try {
+
+      const token = localStorage.getItem("token");
 
       await API.delete(
         `/api/books/${id}`,
@@ -293,7 +273,6 @@ const navigate = useNavigate();
 
             <div className="row">
 
-              {/* TITLE */}
               <div className="col-lg-4 mb-3">
 
                 <input
@@ -311,7 +290,6 @@ const navigate = useNavigate();
 
               </div>
 
-              {/* AUTHOR */}
               <div className="col-lg-4 mb-3">
 
                 <input
@@ -329,7 +307,6 @@ const navigate = useNavigate();
 
               </div>
 
-              {/* QUANTITY */}
               <div className="col-lg-2 mb-3">
 
                 <input
@@ -347,7 +324,6 @@ const navigate = useNavigate();
 
               </div>
 
-              {/* BUTTON */}
               <div className="col-lg-2 mb-3">
 
                 <button
@@ -374,7 +350,7 @@ const navigate = useNavigate();
 
         </div>
 
-        {/* BOOK LIST */}
+        {/* BOOKS */}
         <div className="row">
 
           {
@@ -413,7 +389,6 @@ const navigate = useNavigate();
 
                   <p>
                     <strong>Available:</strong>{" "}
-
                     <span
                       className={
                         book.available > 0
