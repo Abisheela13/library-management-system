@@ -17,47 +17,64 @@ function Login() {
 
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+ const handleLogin = async (e) => {
 
-    try {
+  e.preventDefault();
 
-      setLoading(true);
+  try {
 
-      const endpoint = "/api/auth/login";
-      
-      const res = await API.post(endpoint, form);
+    setLoading(true);
+
+    const endpoint = "/api/auth/login";
+
+    const res = await API.post(endpoint, form);
+
+    localStorage.setItem(
+      "token",
+      res.data.token
+    );
+
+    // ADMIN CHECK
+    if (
+      form.email === "admin@gmail.com" &&
+      form.password === "admin123"
+    ) {
 
       localStorage.setItem(
-        "token",
-        res.data.token
+        "user",
+        JSON.stringify({
+          name: "Admin",
+          role: "ADMIN",
+        })
       );
+
+      navigate("/admin");
+
+    } else {
 
       localStorage.setItem(
         "user",
         JSON.stringify(res.data.user)
       );
 
-      // ROLE CHECK
-      if (res.data.user.role === "ADMIN") {
-        navigate("/admin");
-      } else {
-        navigate("/dashboard");
-      }
-
-    } catch (err) {
-
-      alert(
-        err.response?.data?.message ||
-        "Login Failed"
-      );
-
-    } finally {
-
-      setLoading(false);
+      navigate("/dashboard");
 
     }
-  };
+
+  } catch (err) {
+
+    alert(
+      err.response?.data?.message ||
+      "Login Failed"
+    );
+
+  } finally {
+
+    setLoading(false);
+
+  }
+
+};
 
   return (
     <div className="container mt-5">

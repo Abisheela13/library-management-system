@@ -6,14 +6,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon server.js"
   },
-
-   
-   "prisma": {
+  "prisma": {
     "seed": "node prisma/seed.js"
   },
-
-
-
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -21,6 +16,7 @@
   "dependencies": {
     "@prisma/client": "^5.22.0",
     "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
