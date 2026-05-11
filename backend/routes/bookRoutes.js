@@ -1,7 +1,6 @@
 const express = require("express");
 
 const authMiddleware = require("../middleware/authMiddleware");
-const adminMiddleware = require("../middleware/adminMiddleware");
 
 const {
   getBooks,
@@ -13,8 +12,11 @@ const {
 const router = express.Router();
 
 router.get("/", authMiddleware, getBooks);
-router.post("/", authMiddleware, adminMiddleware, addBook);
-router.put("/:id", authMiddleware, adminMiddleware, updateBook);
-router.delete("/:id", authMiddleware, adminMiddleware, deleteBook);
+
+router.post("/", authMiddleware, addBook);
+
+router.put("/:id", authMiddleware, updateBook);
+
+router.delete("/:id", authMiddleware, deleteBook);
 
 module.exports = router;
