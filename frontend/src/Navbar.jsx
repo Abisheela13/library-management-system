@@ -1,31 +1,21 @@
+import { Link } from "react-router-dom";
+
 function Navbar() {
-
   return (
+    <nav className="navbar bg-dark text-white px-3">
 
-    <nav
-      className="navbar navbar-expand-lg px-4 py-3"
-      style={{
-        background: "#111827",
-        position: "sticky",
-        top: "0",
-        zIndex: "1000",
-        width: "100%",
-        boxShadow: "0 2px 10px rgba(0,0,0,0.1)"
-      }}
-    >
+      <h4>Library System</h4>
 
-      <div className="container-fluid">
+      <div className="d-flex gap-3">
 
-        <h2
-          className="fw-bold text-white m-0"
-        >
-          Library Management System
-        </h2>
+        <Link className="text-white" to="/dashboard">Home</Link>
+        <Link className="text-white" to="/history">History</Link>
+        <Link className="text-white" to="/profile">Profile</Link>
+        <Link className="text-white" to="/admin-analytics">Analytics</Link>
 
       </div>
 
     </nav>
-
   );
 }
 

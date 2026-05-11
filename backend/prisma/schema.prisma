@@ -22,19 +22,22 @@ model User {
 }
 
 model Book {
-  id         Int      @id @default(autoincrement())
-  title      String
-  author     String
-  available  Boolean  @default(true)
-  borrows    Borrow[]
+  id            Int      @id @default(autoincrement())
+  title         String
+  author        String
+  quantity      Int      @default(1)
+  available     Boolean  @default(true)
+  borrows       Borrow[]
 }
 
 model Borrow {
-  id         Int      @id @default(autoincrement())
-  userId     Int
-  bookId     Int
-  borrowedAt DateTime @default(now())
-  returnedAt DateTime?
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  bookId      Int
+  borrowedAt  DateTime @default(now())
+  dueDate     DateTime?
+  returnedAt  DateTime?
+  isApproved  Boolean  @default(false)
 
   user User @relation(fields: [userId], references: [id])
   book Book @relation(fields: [bookId], references: [id])

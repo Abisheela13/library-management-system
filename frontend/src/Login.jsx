@@ -3,150 +3,91 @@ import { useNavigate } from "react-router-dom";
 import API from "./api";
 
 function Login() {
-
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-
-  };
-
-  const handleSubmit = async (e) => {
-
+  const handleLogin = async (e) => {
     e.preventDefault();
 
+    if (!form.email || !form.password) {
+      alert("Please fill all fields");
+      return;
+    }
+
     try {
+      setLoading(true);
 
-      const response = await API.post(
-  "/api/auth/login",
-  formData
-);
+      const res = await API.post("/api/auth/login", form);
 
-      // save token
-      localStorage.setItem(
-        "token",
-        response.data.token
-      );
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
 
-      // save user
-      localStorage.setItem(
-        "user",
-        JSON.stringify(response.data.user)
-      );
+      alert("Login Success");
 
-      alert("Login Successful");
+      const role = res.data.user.role;
 
-      // role based redirect
-      if (response.data.user.role === "ADMIN") {
-
+      if (role === "ADMIN") {
         navigate("/admin");
-
       } else {
-
         navigate("/dashboard");
-
       }
 
-    } catch (error) {
-
-      alert(
-        error.response?.data?.message ||
-        "Login failed"
-      );
-
+    } catch (err) {
+      console.log(err);
+      alert(err.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
+    <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
 
-    <div
-  className="d-flex justify-content-center align-items-center"
-  style={{
-    minHeight: "100vh",
-    background: "#f4f7fb",
-    padding: "20px"
-  }}
->
-
-      <div
-       
-  className="card shadow-lg card-hover border-0 p-5"
-      style={{
-  width: "100%",
-  maxWidth: "480px",
-  borderRadius: "28px",
-  background: "#ffffff"
-}}
+      <form
+        onSubmit={handleLogin}
+        className="p-5 shadow bg-white rounded"
+        style={{ width: "350px" }}
       >
 
-        <h1 className="text-center fw-bold mb-3"   style={{fontSize: "3rem"}}>
-          Welcome Back
-        </h1>
+        <h3 className="mb-3 text-center">Login</h3>
 
-        <p className="text-center text-muted mb-4">
-          Login to continue
+        {/* EMAIL */}
+        <input
+          className="form-control mb-2"
+          placeholder="Email"
+          type="email"
+          value={form.email}
+          onChange={(e) =>
+            setForm({ ...form, email: e.target.value })
+          }
+        />
+
+        {/* PASSWORD */}
+        <input
+          type="password"
+          className="form-control mb-3"
+          placeholder="Password"
+          value={form.password}
+          onChange={(e) =>
+            setForm({ ...form, password: e.target.value })
+          }
+        />
+
+        {/* BUTTON */}
+        <button
+          className="btn btn-dark w-100"
+          disabled={loading}
+        >
+          {loading ? "Logging in..." : "Login"}
+        </button>
+
+        <p className="text-center mt-2">
+          <a href="/register">Register</a>
         </p>
 
-        <form onSubmit={handleSubmit}>
-
-          <div className="mb-3">
-
-            <input
-              type="email"
-              name="email"
-              placeholder="Enter Email"
-              className="form-control py-3 px-4"
-              style={{
-                borderRadius: "12px"
-              }}
-              onChange={handleChange}
-            />
-
-          </div>
-
-          <div className="mb-4">
-
-            <input
-              type="password"
-              name="password"
-              placeholder="Enter Password"
-              className="form-control p-3"
-              style={{
-                borderRadius: "12px"
-              }}
-              onChange={handleChange}
-            />
-
-          </div>
-
-          <button
-            className="btn btn-dark w-100 p-3"
-            style={{
-              borderRadius: "12px"
-            }}
-          >
-            Login
-          </button>
-
-        </form>
-
-        <p className="text-center mt-3">
-          Don't have an account?{" "}
-          <a href="/register">
-            Register
-          </a>
-        </p>
-
-      </div>
+      </form>
 
     </div>
   );

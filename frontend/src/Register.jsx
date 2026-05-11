@@ -3,144 +3,84 @@ import { useNavigate } from "react-router-dom";
 import API from "./api";
 
 function Register() {
-
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
+  const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
-     role: "USER",
+    role: "USER"
   });
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSubmit = async (e) => {
-
+  const handleRegister = async (e) => {
     e.preventDefault();
 
     try {
+      await API.post("/api/auth/register", form);
 
-     await API.post("/api/auth/register", formData);
-
-      alert("Registration Successful");
-
+      alert("Register Success");
       navigate("/");
 
     } catch (error) {
+      console.log("REGISTER ERROR:", error);
 
       alert(
         error.response?.data?.message ||
         "Registration failed"
       );
-
     }
   };
 
   return (
+    <div className="container mt-5">
+      <h3>Register</h3>
 
-  <div
-  className="d-flex justify-content-center align-items-center"
-  style={{
-    minHeight: "100vh",
-    background: "#f4f7fb",
-    padding: "20px"
-  }}
->
-      <div
-        className="card shadow-lg card-hover border-0 p-5"
-        style={{
-          width: "100%",
-  maxWidth: "480px",
-  borderRadius: "28px",
-  background: "#ffffff"
-}}
-      >
+      <form onSubmit={handleRegister}>
 
-        <h1 className="text-center fw-bold mb-3" style={{
-    fontSize: "3rem"
-  }}>
-          Create Account
-        </h1>
+        <input
+          placeholder="Name"
+          className="form-control mb-2"
+          value={form.name}
+          onChange={(e) =>
+            setForm({ ...form, name: e.target.value })
+          }
+        />
 
-        <p className="text-center text-muted mb-4">
-          Register to access the library
-        </p>
+        <input
+          placeholder="Email"
+          className="form-control mb-2"
+          value={form.email}
+          onChange={(e) =>
+            setForm({ ...form, email: e.target.value })
+          }
+        />
 
-        <form onSubmit={handleSubmit}>
+        <input
+          type="password"
+          placeholder="Password"
+          className="form-control mb-2"
+          value={form.password}
+          onChange={(e) =>
+            setForm({ ...form, password: e.target.value })
+          }
+        />
 
-          <div className="mb-3">
+        <select
+          className="form-control mb-3"
+          value={form.role}
+          onChange={(e) =>
+            setForm({ ...form, role: e.target.value })
+          }
+        >
+          <option value="USER">User</option>
+          <option value="ADMIN">Admin</option>
+        </select>
 
-            <input
-              type="text"
-              name="name"
-              placeholder="Enter Name"
-              className="form-control py-3 px-4"
-              style={{ borderRadius: "12px" }}
-              onChange={handleChange}
-            />
+        <button className="btn btn-dark w-100">
+          Register
+        </button>
 
-          </div>
-
-          <div className="mb-3">
-
-            <input
-              type="email"
-              name="email"
-              placeholder="Enter Email"
-              className="form-control p-3"
-              style={{ borderRadius: "12px" }}
-              onChange={handleChange}
-            />
-
-          </div>
-
-          <div className="mb-4">
-
-            <input
-              type="password"
-              name="password"
-              placeholder="Enter Password"
-              className="form-control p-3"
-              style={{ borderRadius: "12px" }}
-              onChange={handleChange}
-            />
-
-          </div>
-
-            <select
-  name="role"
-  className="form-control p-3"
-  onChange={handleChange}
->
-  <option value="USER">User</option>
-  <option value="ADMIN">Admin</option>
-</select>
-
-
-          <button
-            className="btn btn-dark w-100 p-3"
-            style={{ borderRadius: "12px" }}
-          >
-            Register
-          </button>
-
-        </form>
-
-        <p className="text-center mt-3">
-          Already have an account?{" "}
-          <a href="/">
-            Login
-          </a>
-        </p>
-
-      </div>
-
+      </form>
     </div>
   );
 }

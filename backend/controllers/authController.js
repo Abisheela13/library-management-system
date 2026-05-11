@@ -2,14 +2,18 @@ const prisma = require("../prismaClient");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-
-// register user
+// REGISTER
 const registerUser = async (req, res) => {
   try {
+    const { name, email, password } = req.body;
 
-    const { name, email, password,role } = req.body;
+    // ✅ VALIDATION FIX (IMPORTANT)
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        message: "All fields are required",
+      });
+    }
 
-    // check user exists
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
@@ -20,20 +24,17 @@ const registerUser = async (req, res) => {
       });
     }
 
-    // hashpassword
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // create user
     const user = await prisma.user.create({
       data: {
         name,
         email,
         password: hashedPassword,
-        role,
+        role: "USER",
       },
     });
 
-    // res
     res.status(201).json({
       message: "User registered successfully",
       user: {
@@ -45,22 +46,26 @@ const registerUser = async (req, res) => {
     });
 
   } catch (error) {
-
+    console.log("REGISTER ERROR:", error);
     res.status(500).json({
+      message: "Server error",
       error: error.message,
     });
-
   }
 };
 
-
-// login user
+// LOGIN
 const loginUser = async (req, res) => {
   try {
-
     const { email, password } = req.body;
 
-    // find user
+    // ✅ VALIDATION FIX
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Email and password required",
+      });
+    }
+
     const user = await prisma.user.findUnique({
       where: { email },
     });
@@ -71,11 +76,7 @@ const loginUser = async (req, res) => {
       });
     }
 
-    // check pass
-    const isMatch = await bcrypt.compare(
-      password,
-      user.password
-    );
+    const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
       return res.status(400).json({
@@ -83,19 +84,12 @@ const loginUser = async (req, res) => {
       });
     }
 
-    //    generate jwt token
     const token = jwt.sign(
-      {
-        id: user.id,
-        role: user.role,
-      },
+      { id: user.id, role: user.role },
       process.env.JWT_SECRET,
-      {
-        expiresIn: "1d",
-      }
+      { expiresIn: "1d" }
     );
 
-    // response
     res.status(200).json({
       message: "Login successful",
       token,
@@ -108,14 +102,13 @@ const loginUser = async (req, res) => {
     });
 
   } catch (error) {
-
+    console.log("LOGIN ERROR:", error);
     res.status(500).json({
+      message: "Server error",
       error: error.message,
     });
-
   }
 };
-
 
 module.exports = {
   registerUser,
