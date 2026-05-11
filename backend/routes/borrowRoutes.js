@@ -3,9 +3,10 @@ const express = require("express");
 const {
   borrowBook,
   returnBook,
+  approveReturn,
   getBorrowRecords,
   getUserBorrowHistory,
-  getMyBorrows
+  getMyBorrows,
 } = require("../controllers/borrowController");
 
 const authMiddleware = require("../middleware/authMiddleware");
@@ -13,17 +14,21 @@ const adminMiddleware = require("../middleware/adminMiddleware");
 
 const router = express.Router();
 
-/* USER */
+/* ---------------- USER ---------------- */
 router.post("/borrow", authMiddleware, borrowBook);
 router.post("/return", authMiddleware, returnBook);
-
-/* USER HISTORY (FINE + OVERDUE) */
+router.get("/my", authMiddleware, getMyBorrows);
 router.get("/history", authMiddleware, getUserBorrowHistory);
 
-/* SIMPLE USER BORROWS */
-router.get("/my", authMiddleware, getMyBorrows);
-
-/* ADMIN */
+/* ---------------- ADMIN ---------------- */
 router.get("/", authMiddleware, adminMiddleware, getBorrowRecords);
+
+//  THIS IS WHERE YOU ADD approve-return (IMPORTANT)
+router.post(
+  "/approve-return",
+  authMiddleware,
+  adminMiddleware,
+  approveReturn
+);
 
 module.exports = router;

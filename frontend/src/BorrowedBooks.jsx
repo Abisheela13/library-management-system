@@ -1,46 +1,83 @@
-import {  useState } from "react";
+import { useEffect, useState } from "react";
 import API from "./api";
 import Navbar from "./Navbar";
 
 function BorrowedBooks() {
+
   const [records, setRecords] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem("token");
 
-  const loadRecords = async () => {
-  try {
-    setLoading(true);
+  /* LOAD BORROWED BOOKS */
+  useEffect(() => {
 
-    const res = await API.get("/api/borrow/my", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    API.get(
+      "/api/borrow/my",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
 
-    setRecords(res.data || []);
-  } catch (error) {
-    console.log("Fetch Error:", error);
-    alert("API failed - check backend route");
-  } finally {
-    setLoading(false);
-  }
-};
+      .then((res) => {
 
+        setRecords(res.data || []);
+
+      })
+
+      .catch((error) => {
+
+        console.log("Fetch Error:", error);
+
+        alert("Failed to load borrowed books");
+
+      })
+
+      .finally(() => {
+
+        setLoading(false);
+
+      });
+
+  }, []);
+
+  /* RETURN BOOK */
   const returnBook = async (borrowId) => {
+
     try {
+
       await API.post(
         "/api/borrow/return",
         { borrowId },
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
-      alert("Book Returned");
-      loadRecords(); // refresh safely
+      alert("Book Returned Successfully");
+
+      // REFRESH RECORDS
+      const res = await API.get(
+        "/api/borrow/my",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setRecords(res.data || []);
 
     } catch (error) {
+
       console.log(error);
-      alert("Return failed");
+
+      alert("Return Failed");
+
     }
   };
 
@@ -49,42 +86,116 @@ function BorrowedBooks() {
       <Navbar />
 
       <div className="container mt-4">
-        <h2>Borrowed Books</h2>
 
-        {loading && <p>Loading...</p>}
+        <h2 className="mb-4">
+          Borrowed Books
+        </h2>
 
-        <div className="row mt-3">
-          {records.length > 0 ? (
-            records.map((r) => (
-              <div className="col-md-4 mb-3" key={r.id}>
-                <div className="card p-3 shadow-sm">
+        {/* LOADING */}
+        {loading && (
+          <h5>Loading...</h5>
+        )}
 
-                  <h5>{r.book?.title}</h5>
-                  <p>{r.book?.author}</p>
+        {/* BOOK LIST */}
+        <div className="row">
 
-                  <p>
-                    Status:{" "}
-                    <b style={{ color: r.returnedAt ? "green" : "orange" }}>
-                      {r.returnedAt ? "Returned" : "Borrowed"}
-                    </b>
-                  </p>
+          {
+            records.length > 0 ? (
 
-                  {!r.returnedAt && (
-                    <button
-                      className="btn btn-dark"
-                      onClick={() => returnBook(r.id)}
-                    >
-                      Return Book
-                    </button>
-                  )}
+              records.map((r) => (
+
+                <div
+                  className="col-md-4 mb-4"
+                  key={r.id}
+                >
+
+                  <div className="card shadow-sm p-4 h-100 border-0">
+
+                    <h4 className="fw-bold">
+                      {r.book?.title}
+                    </h4>
+
+                    <p className="text-muted">
+                      {r.book?.author}
+                    </p>
+
+                    <p>
+                      <strong>Status:</strong>{" "}
+
+                      <span
+                        className={
+                          r.returnedAt
+                            ? "text-success fw-bold"
+                            : "text-warning fw-bold"
+                        }
+                      >
+                        {
+                          r.returnedAt
+                            ? "Returned"
+                            : "Borrowed"
+                        }
+                      </span>
+
+                    </p>
+
+                    <p>
+                      <strong>Borrowed Date:</strong>{" "}
+
+                      {
+                        new Date(
+                          r.borrowedAt
+                        ).toLocaleDateString()
+                      }
+                    </p>
+
+                    {
+                      r.returnedAt && (
+
+                        <p>
+                          <strong>Returned Date:</strong>{" "}
+
+                          {
+                            new Date(
+                              r.returnedAt
+                            ).toLocaleDateString()
+                          }
+                        </p>
+
+                      )
+                    }
+
+                    {
+                      !r.returnedAt && (
+
+                        <button
+                          className="btn btn-dark mt-2"
+                          onClick={() =>
+                            returnBook(r.id)
+                          }
+                        >
+                          Return Book
+                        </button>
+
+                      )
+                    }
+
+                  </div>
 
                 </div>
-              </div>
-            ))
-          ) : (
-            !loading && <p>No borrowed books</p>
-          )}
+
+              ))
+
+            ) : (
+
+              !loading && (
+                <p>No borrowed books</p>
+              )
+
+            )
+          }
+
         </div>
+
       </div>
     </>
   );

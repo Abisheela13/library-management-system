@@ -8,120 +8,181 @@ import {
   Cell,
   Tooltip,
   Legend,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
+  ResponsiveContainer,
 } from "recharts";
 
 function AdminAnalytics() {
-  const [summary, setSummary] = useState({
-    total: 0,
-    active: 0,
-    returned: 0,
-  });
+
+  const [records, setRecords] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem("token");
 
-  // DIRECT USEEFFECT (NO loadData)
   useEffect(() => {
-    (async () => {
+
+    const fetchAnalytics = async () => {
+
       try {
-        const res = await API.get("/api/borrow/my", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
 
-        const total = res.data.length;
-        const active = res.data.filter((b) => !b.returnedAt).length;
-        const returned = total - active;
+        setLoading(true);
 
-        setSummary({ total, active, returned });
-      } catch (err) {
-        console.log("Analytics Error:", err);
+        const response = await API.get(
+          "/api/borrow",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setRecords(response.data || []);
+
+      } catch (error) {
+
+        console.log(error);
+
+        alert("Failed to load analytics");
+
+      } finally {
+
+        setLoading(false);
+
       }
-    })();
+
+    };
+
+    fetchAnalytics();
+
   }, []);
 
-  const pieData = [
-    { name: "Active", value: summary.active },
-    { name: "Returned", value: summary.returned },
+  const totalBorrows = records.length;
+
+  const returnedBooks = records.filter(
+    (r) => r.returnedAt
+  ).length;
+
+  const pendingBooks = records.filter(
+    (r) => !r.returnedAt
+  ).length;
+
+  /* GRAPH DATA */
+  const chartData = [
+    {
+      name: "Returned",
+      value: returnedBooks,
+    },
+    {
+      name: "Pending",
+      value: pendingBooks,
+    },
   ];
 
-  const barData = [
-    { name: "Active", value: summary.active },
-    { name: "Returned", value: summary.returned },
+  const COLORS = [
+    "#22c55e",
+    "#f59e0b",
   ];
-
-  const COLORS = ["#ff9800", "#4caf50"];
 
   return (
     <>
       <Navbar />
 
       <div className="container mt-4">
-        <h3>Admin Analytics Dashboard </h3>
+
+        <h1 className="mb-4">
+          Analytics
+        </h1>
+
+        {/* LOADING */}
+        {loading && (
+          <h5>Loading...</h5>
+        )}
 
         {/* CARDS */}
-        <div className="row mt-3">
-          <div className="col-md-4">
-            <div className="card p-3 text-center shadow">
-              <h5>Total</h5>
-              <h2>{summary.total}</h2>
+        <div className="row">
+
+          <div className="col-md-4 mb-4">
+
+            <div className="card p-4 shadow-sm h-100">
+
+              <h3>Total Borrows</h3>
+
+              <h1>{totalBorrows}</h1>
+
             </div>
+
           </div>
 
-          <div className="col-md-4">
-            <div className="card p-3 text-center shadow">
-              <h5>Active</h5>
-              <h2 style={{ color: "orange" }}>{summary.active}</h2>
+          <div className="col-md-4 mb-4">
+
+            <div className="card p-4 shadow-sm h-100">
+
+              <h3>Returned Books</h3>
+
+              <h1>{returnedBooks}</h1>
+
             </div>
+
           </div>
 
-          <div className="col-md-4">
-            <div className="card p-3 text-center shadow">
-              <h5>Returned</h5>
-              <h2 style={{ color: "green" }}>{summary.returned}</h2>
+          <div className="col-md-4 mb-4">
+
+            <div className="card p-4 shadow-sm h-100">
+
+              <h3>Pending Returns</h3>
+
+              <h1>{pendingBooks}</h1>
+
             </div>
-          </div>
-        </div>
 
-        {/* CHARTS */}
-        <div className="row mt-5">
-
-          {/* PIE */}
-          <div className="col-md-6 text-center">
-            <h5>Borrow Ratio</h5>
-
-            <PieChart width={300} height={300}>
-              <Pie
-                data={pieData}
-                dataKey="value"
-                outerRadius={100}
-              >
-                {pieData.map((_, index) => (
-                  <Cell key={index} fill={COLORS[index]} />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </PieChart>
-          </div>
-
-          {/* BAR */}
-          <div className="col-md-6 text-center">
-            <h5>Status Overview</h5>
-
-            <BarChart width={350} height={300} data={barData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="value" fill="#2196f3" />
-            </BarChart>
           </div>
 
         </div>
+
+        {/* GRAPH */}
+        <div className="card p-4 shadow-sm mt-4">
+
+          <h3 className="mb-4">
+            Borrow Analytics Graph
+          </h3>
+
+          <div style={{ width: "100%", height: 400 }}>
+
+            <ResponsiveContainer>
+
+              <PieChart>
+
+                <Pie
+                  data={chartData}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={130}
+                  dataKey="value"
+                  label
+                >
+
+                  {chartData.map((entry, index) => (
+
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index]}
+                    />
+
+                  ))}
+
+                </Pie>
+
+                <Tooltip />
+
+                <Legend />
+
+              </PieChart>
+
+            </ResponsiveContainer>
+
+          </div>
+
+        </div>
+
       </div>
     </>
   );

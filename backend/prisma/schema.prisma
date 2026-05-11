@@ -12,33 +12,48 @@ enum Role {
   ADMIN
 }
 
+enum BorrowStatus {
+  BORROWED
+  PENDING_RETURN
+  RETURNED
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   name      String
   email     String   @unique
   password  String
   role      Role     @default(USER)
+
   borrows   Borrow[]
 }
 
 model Book {
-  id            Int      @id @default(autoincrement())
-  title         String
-  author        String
-  quantity      Int      @default(1)
-  available     Boolean  @default(true)
-  borrows       Borrow[]
+  id          Int      @id @default(autoincrement())
+  title       String
+  author      String
+
+  quantity    Int
+  available   Int
+
+  borrows     Borrow[]
 }
 
 model Borrow {
-  id          Int      @id @default(autoincrement())
+  id          Int            @id @default(autoincrement())
+
   userId      Int
   bookId      Int
-  borrowedAt  DateTime @default(now())
+
+  borrowedAt  DateTime       @default(now())
   dueDate     DateTime?
   returnedAt  DateTime?
-  isApproved  Boolean  @default(false)
 
-  user User @relation(fields: [userId], references: [id])
-  book Book @relation(fields: [bookId], references: [id])
+  status      BorrowStatus   @default(BORROWED)
+
+  user        User @relation(fields: [userId], references: [id])
+  book        Book @relation(fields: [bookId], references: [id])
+
+  @@index([userId])
+  @@index([bookId])
 }

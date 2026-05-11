@@ -1,63 +1,128 @@
-import {  useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import API from "./api";
 import Navbar from "./Navbar";
 
 function Dashboard() {
+
+  const navigate = useNavigate();
+
   const [books, setBooks] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem("token");
 
-  // LOAD BOOKS
+  /* LOAD BOOKS */
+  useEffect(() => {
+
   const loadBooks = async () => {
-  try {
-    setLoading(true);
 
-    const token = localStorage.getItem("token");
+    const user = JSON.parse(
+      localStorage.getItem("user")
+    );
 
-    if (!token) {
-      alert("Login required");
+    // NOT LOGGED IN
+    if (!user) {
+      navigate("/login");
       return;
     }
 
-    const res = await API.get("/api/books", {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
+    // ADMIN REDIRECT
+    if (user.role === "ADMIN") {
+      navigate("/admin");
+      return;
+    }
 
-    setBooks(res.data);
-
-  } catch (error) {
-    console.log("LOAD ERROR:", error.response || error.message);
-
-    alert(
-      error.response?.data?.message ||
-      "Server error while loading books"
-    );
-  } finally {
-    setLoading(false);
-  }
-};
-  // BORROW BOOK
-  const borrow = async (bookId) => {
     try {
+
+      const res = await API.get(
+        "/api/books",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setBooks(res.data);
+
+    } catch (error) {
+
+      console.log(error);
+
+      alert("Failed to load books");
+
+    } finally {
+
+      setLoading(false);
+
+    }
+  };
+
+  loadBooks();
+
+}, []);
+
+
+
+  /* FETCH BOOKS */
+  const fetchBooks = async () => {
+
+    try {
+
+      const res = await API.get(
+        "/api/books",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setBooks(res.data);
+
+    } catch (error) {
+
+      console.log(error);
+
+      alert("Failed to load books");
+
+    } finally {
+
+      setLoading(false);
+
+    }
+  };
+
+  /* BORROW BOOK */
+  const borrowBook = async (bookId) => {
+
+    try {
+
       await API.post(
         "/api/borrow/borrow",
         { bookId },
         {
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
-      alert("Borrowed Successfully");
-      loadBooks();
+      alert("Book Borrowed Successfully");
+
+      // REFRESH
+      fetchBooks();
 
     } catch (error) {
+
       console.log(error);
-      alert(error.response?.data?.message || "Borrow failed");
+
+      alert(
+        error.response?.data?.message ||
+        "Borrow Failed"
+      );
     }
   };
 
@@ -67,45 +132,96 @@ function Dashboard() {
 
       <div className="container mt-4">
 
-        <h3 className="mb-3">Books</h3>
+        <div className="d-flex justify-content-between align-items-center mb-4">
 
-        {/* LOADING STATE */}
-        {loading && <p>Loading books...</p>}
+          <h2>Library Books</h2>
 
-        {/* EMPTY STATE */}
-        {!loading && books.length === 0 && (
-          <p>No books available</p>
+        </div>
+
+        {/* LOADING */}
+        {loading && (
+          <h5>Loading...</h5>
         )}
 
+        {/* BOOK LIST */}
         <div className="row">
-          {books.map((b) => (
-            <div className="col-md-4 mb-3" key={b.id}>
-              <div className="card p-3 shadow-sm h-100">
 
-                <h5>{b.title}</h5>
-                <p>{b.author}</p>
+          {books.length > 0 ? (
 
-                {/* STATUS FROM BACKEND */}
-                <p>
-                  Status:{" "}
-                  {b.available ? (
-                    <span style={{ color: "green" }}>Available</span>
-                  ) : (
-                    <span style={{ color: "red" }}>Not Available</span>
-                  )}
-                </p>
+            books.map((book) => (
 
-                <button
-                  className="btn btn-dark"
-                  disabled={!b.available}
-                  onClick={() => borrow(b.id)}
-                >
-                  {b.available ? "Borrow" : "Unavailable"}
-                </button>
+              <div
+                className="col-12 col-md-6 col-lg-4 mb-4"
+                key={book.id}
+              >
+
+                <div className="card shadow-sm h-100 border-0">
+
+                  <div className="card-body d-flex flex-column">
+
+                    <h4 className="fw-bold">
+                      {book.title}
+                    </h4>
+
+                    <p className="text-muted mb-2">
+                      {book.author}
+                    </p>
+
+                    <p className="mb-2">
+                      <strong>Total Quantity:</strong>{" "}
+                      {book.quantity}
+                    </p>
+
+                    <p className="mb-3">
+                      <strong>Available:</strong>{" "}
+
+                      <span
+                        className={
+                          book.available > 0
+                            ? "text-success fw-bold"
+                            : "text-danger fw-bold"
+                        }
+                      >
+                        {book.available}
+                      </span>
+                    </p>
+
+                    <div className="mt-auto">
+
+                      <button
+                        className="btn btn-dark w-100"
+                        disabled={book.available <= 0}
+                        onClick={() =>
+                          borrowBook(book.id)
+                        }
+                      >
+
+                        {
+                          book.available > 0
+                            ? "Borrow Book"
+                            : "Out Of Stock"
+                        }
+
+                      </button>
+
+                    </div>
+
+                  </div>
+
+                </div>
 
               </div>
-            </div>
-          ))}
+
+            ))
+
+          ) : (
+
+            !loading && (
+              <p>No books available</p>
+            )
+
+          )}
+
         </div>
 
       </div>

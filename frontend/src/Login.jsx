@@ -1,94 +1,111 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import API from "./api";
 
 function Login() {
-  const navigate = useNavigate();
 
-  const [form, setForm] = useState({ email: "", password: "" });
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const isAdmin =
+    new URLSearchParams(location.search).get("role") === "admin";
+
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+  });
+
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    if (!form.email || !form.password) {
-      alert("Please fill all fields");
-      return;
-    }
-
     try {
+
       setLoading(true);
 
-      const res = await API.post("/api/auth/login", form);
+      const endpoint = isAdmin
+        ? "/api/admin/login"
+        : "/api/auth/login";
 
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+      const res = await API.post(endpoint, form);
 
-      alert("Login Success");
+      localStorage.setItem(
+        "token",
+        res.data.token
+      );
 
-      const role = res.data.user.role;
+      localStorage.setItem(
+        "user",
+        JSON.stringify(res.data.user)
+      );
 
-      if (role === "ADMIN") {
+      // ROLE CHECK
+      if (res.data.user.role === "ADMIN") {
         navigate("/admin");
       } else {
         navigate("/dashboard");
       }
 
     } catch (err) {
-      console.log(err);
-      alert(err.response?.data?.message || "Login failed");
+
+      alert(
+        err.response?.data?.message ||
+        "Login Failed"
+      );
+
     } finally {
+
       setLoading(false);
+
     }
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
+    <div className="container mt-5">
 
-      <form
-        onSubmit={handleLogin}
-        className="p-5 shadow bg-white rounded"
-        style={{ width: "350px" }}
-      >
+      <h2>
+        {isAdmin ? "Admin Login" : "User Login"}
+      </h2>
 
-        <h3 className="mb-3 text-center">Login</h3>
+      <form onSubmit={handleLogin}>
 
-        {/* EMAIL */}
         <input
-          className="form-control mb-2"
+          className="form-control mb-3"
           placeholder="Email"
-          type="email"
           value={form.email}
           onChange={(e) =>
-            setForm({ ...form, email: e.target.value })
+            setForm({
+              ...form,
+              email: e.target.value,
+            })
           }
         />
 
-        {/* PASSWORD */}
         <input
-          type="password"
           className="form-control mb-3"
+          type="password"
           placeholder="Password"
           value={form.password}
           onChange={(e) =>
-            setForm({ ...form, password: e.target.value })
+            setForm({
+              ...form,
+              password: e.target.value,
+            })
           }
         />
 
-        {/* BUTTON */}
-        <button
-          className="btn btn-dark w-100"
-          disabled={loading}
-        >
-          {loading ? "Logging in..." : "Login"}
+        <button className="btn btn-dark w-100">
+
+          {loading
+            ? "Loading..."
+            : isAdmin
+            ? "Login as Admin"
+            : "Login"}
+
         </button>
 
-        <p className="text-center mt-2">
-          <a href="/register">Register</a>
-        </p>
-
       </form>
-
     </div>
   );
 }

@@ -12,39 +12,9 @@ const {
 
 const router = express.Router();
 
-
-// view books → logged in users
-router.get(
-  "/",
-  authMiddleware,
-  getBooks
-);
-
-
-// add book -> admin only
-router.post(
-  "/",
-  authMiddleware,
-  adminMiddleware,
-  addBook
-);
-
-
-// update book -> admin only
-router.put(
-  "/:id",
-  authMiddleware,
-  adminMiddleware,
-  updateBook
-);
-
-
-// delete book ->admin only
-router.delete(
-  "/:id",
-  authMiddleware,
-  adminMiddleware,
-  deleteBook
-);
+router.get("/", authMiddleware, getBooks);
+router.post("/", authMiddleware, adminMiddleware, addBook);
+router.put("/:id", authMiddleware, adminMiddleware, updateBook);
+router.delete("/:id", authMiddleware, adminMiddleware, deleteBook);
 
 module.exports = router;

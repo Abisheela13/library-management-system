@@ -1,17 +1,75 @@
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function Navbar() {
+
+const navigate = useNavigate();
+
+  const user = JSON.parse(
+    localStorage.getItem("user")
+  );
+
+  const logout = () => {
+
+    localStorage.clear();
+
+    navigate("/");
+
+  };
+
   return (
-    <nav className="navbar bg-dark text-white px-3">
 
-      <h4>Library System</h4>
+    <nav
+      className="navbar navbar-dark bg-dark px-4 py-3"
+    >
 
-      <div className="d-flex gap-3">
+      <Link
+        className="navbar-brand fw-bold"
+        to="/dashboard"
+      >
+        Library
+      </Link>
 
-        <Link className="text-white" to="/dashboard">Home</Link>
-        <Link className="text-white" to="/history">History</Link>
-        <Link className="text-white" to="/profile">Profile</Link>
-        <Link className="text-white" to="/admin-analytics">Analytics</Link>
+      <div className="d-flex gap-2">
+
+        {user && user.role !== "ADMIN" && (
+          <>
+            <Link
+              className="btn btn-light"
+              to="/dashboard"
+            >
+              Books
+            </Link>
+
+            <Link
+              className="btn btn-warning"
+              to="/borrowed"
+            >
+              Borrowed
+            </Link>
+
+            <Link
+              className="btn btn-info"
+              to="/history"
+            >
+              History
+            </Link>
+
+            <Link
+              className="btn btn-success"
+              to="/profile"
+            >
+              Profile
+            </Link>
+
+            <button
+              className="btn btn-danger"
+              onClick={logout}
+            >
+              Logout
+            </button>
+          </>
+        )}
 
       </div>
 
