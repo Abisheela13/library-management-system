@@ -28,7 +28,7 @@ function AdminAnalytics() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await API.get("/api/borrow", {
+        const res = await API.get("/api/borrow/my", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
